@@ -1,0 +1,2280 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>لوحة إدارة مهام متجر قطع الجوال</title>
+
+  <!-- Tajawal font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50:'#eef6ff',100:'#d9ebff',200:'#b7d8ff',300:'#8ec0ff',400:'#63a3ff',500:'#3b82f6',600:'#2f6ae0',700:'#2654bb',800:'#203f8f',900:'#1c2f66' },
+            mint:  { 50:'#ecfff6',100:'#d2fde8',200:'#a6f7d2',300:'#74e9ba',400:'#48d5a4',500:'#22c38e',600:'#17a87a',700:'#118764',800:'#0e6650',900:'#0c4e3f' },
+            rose:  { 50:'#fff1f2',100:'#ffe1e5',200:'#ffc7cf',300:'#ffa1ad',400:'#ff6f86',500:'#fb3f61',600:'#e12652',700:'#bb1a43',800:'#8f1636',900:'#6f132e' },
+            amber: { 50:'#fff8eb',100:'#ffedc6',200:'#ffd88a',300:'#ffc24d',400:'#ffae1f',500:'#ff9900',600:'#e08300',700:'#b36800',800:'#874e00',900:'#6a3d00' },
+            slate: { 25:'#0b1220',75:'#141a2a' }
+          },
+          fontFamily: { sans: ['Tajawal','ui-sans-serif','system-ui'] },
+          boxShadow: { glass: '0 8px 32px rgba(0,0,0,0.35)' }
+        }
+      }
+    }
+  </script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    body { min-height: 100vh; }
+    body[data-theme="dark"] {
+      background: radial-gradient(1200px 800px at 100% -10%, #1c2f66 0%, #0b1220 45%, #0b1220 100%);
+      color: #e2e8f0;
+    }
+    body[data-theme="light"] {
+      background: radial-gradient(1200px 800px at 100% -10%, #eaf2ff 0%, #ffffff 60%, #ffffff 100%);
+      color: #0f172a;
+    }
+    .glass { border: 1px solid rgba(255,255,255,0.12); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+    body[data-theme="dark"] .glass { background: rgba(255,255,255,0.06); }
+    body[data-theme="light"] .glass { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
+    .glass-strong { border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(12px); }
+    body[data-theme="dark"] .glass-strong { background: rgba(255,255,255,0.08); }
+    body[data-theme="light"] .glass-strong { background: rgba(255,255,255,0.9); border-color: rgba(0,0,0,0.08); }
+    .btn-base { transition: all .2s ease; border-radius: .5rem; padding: .5rem .75rem; }
+    body[data-theme="dark"] .btn-surface { background: rgba(255,255,255,0.08); color: #e2e8f0; }
+    body[data-theme="dark"] .btn-surface:hover { background: rgba(255,255,255,0.12); }
+    body[data-theme="light"] .btn-surface { background: rgba(255,255,255,0.8); color: #0f172a; border: 1px solid rgba(15,23,42,0.2); }
+    body[data-theme="light"] .btn-surface:hover { background: rgba(255,255,255,0.9); }
+    body[data-theme="dark"] .preview-box { background: rgba(30,41,59,0.8); color: #e2e8f0; }
+    body[data-theme="light"] .preview-box { background: rgba(248,250,252,0.9); color: #0f172a; border: 1px solid rgba(15,23,42,0.1); }
+    body[data-theme="dark"] .preview-placeholder { color: #94a3b8; }
+    body[data-theme="light"] .preview-placeholder { color: #64748b; }
+    body[data-theme="dark"] .preview-text { color: #e2e8f0; }
+    body[data-theme="light"] .preview-text { color: #0f172a; }
+    .switch { position: relative; width: 64px; height: 32px; border-radius: 999px; cursor: pointer; user-select: none; }
+    body[data-theme="dark"] .switch { background: rgba(255,255,255,0.2); }
+    body[data-theme="light"] .switch { background: rgba(15,23,42,0.2); }
+    .switch-thumb { position: absolute; top: 3px; width: 26px; height: 26px; border-radius: 50%; transition: all .25s; }
+    body[data-theme="dark"] .switch-thumb { left: 3px; background: #0b1220; box-shadow: 0 2px 8px rgba(0,0,0,0.35); }
+    body[data-theme="light"] .switch-thumb { left: 35px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+    .switch-payment-track { position: relative; }
+    .switch-payment-thumb { left: 2px; }
+    .switch-payment input:checked + .switch-payment-track { background-color: #22c38e; }
+    .switch-payment input:checked + .switch-payment-track .switch-payment-thumb { transform: translateX(48px); }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    html { scroll-behavior: smooth; }
+    .drag-over { background: rgba(59, 130, 246, 0.1) !important; border-color: #3b82f6 !important; }
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: flex; align-items: center; justify-content: center; }
+    .modal-content { max-width: 90vw; max-height: 90vh; overflow: auto; }
+    .notification { position: fixed; top: 20px; right: 20px; z-index: 1001; padding: 12px 20px; border-radius: 8px; color: white; font-weight: 500; transform: translateX(100%); transition: transform 0.3s ease; }
+    .notification.show { transform: translateX(0); }
+    .notification.success { background: #22c38e; }
+    .notification.error { background: #fb3f61; }
+    .notification.warning { background: #ff9900; }
+    .notification.info { background: #3b82f6; }
+  </style>
+</head>
+<body class="font-sans" data-theme="dark">
+  <!-- Header -->
+  <header id="header" class="sticky top-0 z-50 glass-strong">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center gap-3">
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-brand-800/70 ring-1 ring-white/10">
+          <svg viewBox="0 0 24 24" class="w-6 h-6 text-brand-200" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="7" y="2" width="10" height="20" rx="2"></rect>
+            <circle cx="12" cy="18" r="1.2"></circle>
+            <path d="M9 5h6"></path>
+          </svg>
+        </span>
+        <h1 class="text-lg sm:text-xl font-extrabold">لوحة إدارة مهام متجر قطع الجوال</h1>
+      </div>
+      <div id="actions" class="ms-auto flex items-center gap-2 sm:gap-3">
+        <div class="flex items-center gap-2">
+          <span id="themeLabel" class="text-sm text-slate-300">الوضع: داكن</span>
+          <button id="themeToggle" class="switch" aria-label="تبديل الوضع">
+            <span class="switch-thumb"></span>
+          </button>
+        </div>
+        <button id="backupBtn" class="btn-base btn-surface ring-1 ring-white/10">نسخ احتياطي</button>
+        <button id="restoreBtn" class="btn-base btn-surface ring-1 ring-white/10">استعادة</button>
+        <button id="clearBtn" class="btn-base btn-surface ring-1 ring-white/10">مسح البيانات</button>
+      </div>
+    </div>
+
+    <div class="px-4 sm:px-6 pb-3">
+      <div class="max-w-7xl mx-auto">
+        <div class="glass rounded-xl p-3 flex flex-wrap items-center gap-3 text-sm">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
+            <strong>تنبيهات</strong>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap" id="notifItems"></div>
+          <div class="ms-auto text-xs text-slate-300/80">يتم التحديث تلقائيًا</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Tabs -->
+  <nav id="tabs" class="mt-4" role="tablist">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="glass rounded-xl p-1 flex overflow-x-auto no-scrollbar">
+        <button data-tab="dashboard" class="tab-btn active btn-base bg-brand-800/60 text-slate-100 ring-1 ring-white/10">الرئيسية</button>
+        <button data-tab="dropdowns" class="tab-btn btn-base btn-surface ring-1 ring-white/10">إدارة القوائم</button>
+        <button data-tab="reports" class="tab-btn btn-base btn-surface ring-1 ring-white/10">التقارير</button>
+        <button data-tab="archive" class="tab-btn btn-base btn-surface ring-1 ring-white/10">الأرشيف</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+    <!-- Dashboard -->
+    <section id="tab-dashboard" class="tab-section">
+      <!-- KPIs -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="card glass rounded-2xl p-4">
+          <div class="text-slate-300 text-sm">قائمة الانتظار</div>
+          <div class="mt-2 flex items-end justify-between">
+            <div class="text-3xl font-extrabold" id="kpiWaiting">0</div>
+            <span class="px-2 py-1 rounded-md bg-brand-800/40 text-brand-100 text-xs">العملاء</span>
+          </div>
+        </div>
+        <div class="card glass rounded-2xl p-4">
+          <div class="text-slate-300 text-sm">شحنات مستحقة</div>
+          <div class="mt-2 flex items-end justify-between">
+            <div class="text-3xl font-extrabold" id="kpiOverdueShip">0</div>
+            <span class="px-2 py-1 rounded-md bg-amber-800/40 text-amber-100 text-xs">متأخرة</span>
+          </div>
+        </div>
+        <div class="card glass rounded-2xl p-4">
+          <div class="text-slate-300 text-sm">المهام المخولة</div>
+          <div class="mt-2 flex items-end justify-between">
+            <div class="text-3xl font-extrabold" id="kpiBrandTasks">0</div>
+            <span class="px-2 py-1 rounded-md bg-mint-800/40 text-mint-100 text-xs">نشطة</span>
+          </div>
+        </div>
+        <div class="card glass rounded-2xl p-4">
+          <div class="text-slate-300 text-sm">قضايا الطلبات</div>
+          <div class="mt-2 flex items-end justify-between">
+            <div class="text-3xl font-extrabold" id="kpiIssues">0</div>
+            <span class="px-2 py-1 rounded-md bg-rose-800/40 text-rose-100 text-xs">مفتوحة</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Waiting -->
+      <div class="glass rounded-2xl p-4">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <h2 class="font-bold text-lg">قائمة انتظار العملاء</h2>
+          <div class="flex items-center gap-2">
+            <input id="waitSearch" type="text" placeholder="بحث..." class="btn-base btn-surface ring-1 ring-white/10 w-40 sm:w-56">
+            <select id="waitAvailFilter" class="btn-base btn-surface ring-1 ring-white/10 text-sm">
+              <option value="">الكل</option>
+              <option value="available">متوفر</option>
+              <option value="unavailable">غير متوفر</option>
+              <option value="unknown">غير محدد</option>
+            </select>
+          </div>
+        </div>
+        <form id="waitForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-3 mb-3">
+          <input id="w_name" class="btn-base btn-surface ring-1 ring-white/10" placeholder="اسم العميل (اختياري)">
+          <input required id="w_phone" class="btn-base btn-surface ring-1 ring-white/10" placeholder="واتساب (05xxxxxxxx)">
+          <select id="w_brand" class="btn-base btn-surface ring-1 ring-white/10"></select>
+          <select id="w_part" class="btn-base btn-surface ring-1 ring-white/10"></select>
+          <input id="w_model" class="btn-base btn-surface ring-1 ring-white/10" placeholder="الموديل">
+          <select id="w_network" class="btn-base btn-surface ring-1 ring-white/10">
+            <option value="">بدون شبكة</option>
+            <option value="4G">4G</option>
+            <option value="5G">5G</option>
+          </select>
+          <select id="w_color" class="btn-base btn-surface ring-1 ring-white/10">
+            <option value="">بدون لون</option>
+          </select>
+          <select id="w_avail" class="btn-base btn-surface ring-1 ring-white/10">
+            <option value="unknown">حالة التوفر</option>
+            <option value="available">متوفر</option>
+            <option value="unavailable">غير متوفر</option>
+          </select>
+          <input id="w_price" type="number" min="0" class="btn-base btn-surface ring-1 ring-white/10" placeholder="السعر">
+          <input id="w_link" class="lg:col-span-2 xl:col-span-3 btn-base btn-surface ring-1 ring-white/10" placeholder="رابط المنتج (اختياري)">
+          <div class="sm:col-span-2 lg:col-span-4 xl:col-span-6">
+            <label class="block text-sm font-medium mb-2">معاينة المنتج</label>
+            <div class="flex items-center gap-2">
+              <div id="w_preview" class="flex-1 btn-base preview-box min-h-[2.5rem] flex items-center px-3 rounded-lg">
+                <span class="preview-placeholder">سيتم إنشاء المعاينة تلقائياً...</span>
+              </div>
+              <button type="button" id="copyPreviewBtn" class="btn-base btn-surface ring-1 ring-white/10">نسخ</button>
+              <button type="submit" class="btn-base bg-brand-700/60 hover:bg-brand-600/60 text-slate-100 ring-1 ring-white/10">إضافة</button>
+            </div>
+          </div>
+        </form>
+        <div id="waitList" class="space-y-2 max-h-[360px] overflow-auto no-scrollbar"></div>
+      </div>
+
+      <!-- Shipping -->
+      <div class="glass rounded-2xl p-4">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <h2 class="font-bold text-lg">معالجة بوليصات الشحن الملغية</h2>
+          <div class="flex items-center gap-2">
+            <select id="shipCompanyFilter" class="btn-base btn-surface ring-1 ring-white/10 text-sm">
+              <option value="">كل الشركات</option>
+            </select>
+            <select id="shipPaidFilter" class="btn-base btn-surface ring-1 ring-white/10 text-sm">
+              <option value="">الكل</option>
+              <option value="paid">تم السداد</option>
+              <option value="unpaid">الدفع عند الاستلام</option>
+            </select>
+            <button id="copyPaidPolicies" class="btn-base bg-mint-700/60 hover:bg-mint-600/60 text-slate-100 ring-1 ring-white/10 text-sm">نسخ البوليصات المدفوعة</button>
+          </div>
+        </div>
+        <form id="shipForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-3">
+          <input required id="s_number" class="btn-base btn-surface ring-1 ring-white/10" placeholder="رقم البوليصة">
+          <select id="s_company" class="btn-base btn-surface ring-1 ring-white/10"></select>
+          <select id="s_reason" class="btn-base btn-surface ring-1 ring-white/10"></select>
+          <input id="s_due" type="date" class="btn-base btn-surface ring-1 ring-white/10" placeholder="تاريخ المتابعة">
+          <div class="flex items-center gap-2">
+            <span class="text-sm">الدفع:</span>
+            <label class="switch-payment cursor-pointer">
+              <input id="s_paid" type="checkbox" class="sr-only">
+              <div class="switch-payment-track bg-slate-600 w-20 h-8 rounded-full relative transition-colors">
+                <div class="switch-payment-thumb bg-white w-6 h-6 rounded-full absolute top-1 transition-transform duration-200"></div>
+              </div>
+              <span id="s_paid_label" class="text-xs ms-2">الدفع عند الاستلام</span>
+            </label>
+          </div>
+          <button class="sm:col-span-2 lg:col-span-5 btn-base bg-brand-700/60 hover:bg-brand-600/60 text-slate-100 ring-1 ring-white/10">إضافة</button>
+        </form>
+        <div id="shipList" class="space-y-2 max-h-[360px] overflow-auto no-scrollbar"></div>
+      </div>
+
+      <!-- Two Column Layout for Issues and Returns -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Issues -->
+        <div class="glass rounded-2xl p-4">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h2 class="font-bold text-lg">قضايا الطلبات</h2>
+            <div class="flex items-center gap-2">
+              <select id="issueStatusFilter" class="btn-base btn-surface ring-1 ring-white/10 text-sm">
+                <option value="">الكل</option>
+                <option value="open">قيد المعالجة</option>
+                <option value="done">منجز</option>
+              </select>
+            </div>
+          </div>
+          <form id="issueForm" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+            <input required id="i_order" class="btn-base btn-surface ring-1 ring-white/10" placeholder="رقم الطلب">
+            <select id="i_category" class="btn-base btn-surface ring-1 ring-white/10"></select>
+            <input id="i_product" class="btn-base btn-surface ring-1 ring-white/10" placeholder="المنتج/القطعة">
+            <input id="i_follow" type="date" class="btn-base btn-surface ring-1 ring-white/10">
+            <button class="sm:col-span-2 btn-base bg-brand-700/60 hover:bg-brand-600/60 text-slate-100 ring-1 ring-white/10">إضافة</button>
+          </form>
+          <div id="issueList" class="space-y-2 max-h-[360px] overflow-auto no-scrollbar"></div>
+        </div>
+
+        <!-- Returns -->
+        <div class="glass rounded-2xl p-4">
+          <div class="flex items-center justify-between gap-3 mb-3">
+            <h2 class="font-bold text-lg">إرجاعات</h2>
+          </div>
+          <form id="retForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-3">
+            <input required id="r_number" class="btn-base btn-surface ring-1 ring-white/10" placeholder="رقم الإرجاع">
+            <select id="r_company" class="btn-base btn-surface ring-1 ring-white/10"></select>
+            <select id="r_status" class="btn-base btn-surface ring-1 ring-white/10"></select>
+            <input id="r_product" class="btn-base btn-surface ring-1 ring-white/10" placeholder="المنتج/القطعة">
+            <input id="r_follow" type="date" class="btn-base btn-surface ring-1 ring-white/10">
+            <button class="sm:col-span-2 lg:col-span-3 btn-base bg-brand-700/60 hover:bg-brand-600/60 text-slate-100 ring-1 ring-white/10">إضافة</button>
+          </form>
+          <div id="retList" class="space-y-2 max-h-[360px] overflow-auto no-scrollbar"></div>
+        </div>
+      </div>
+
+      <!-- Tasks -->
+      <div class="glass rounded-2xl p-4">
+        <div class="flex items-center justify-between gap-3 mb-3">
+          <h2 class="font-bold text-lg">المهام المخولة</h2>
+          <div class="flex items-center gap-2">
+            <select id="taskBrandFilter" class="btn-base btn-surface ring-1 ring-white/10 text-sm"></select>
+            <select id="taskStatusFilter" class="btn-base btn-surface ring-1 ring-white/10 text-sm">
+              <option value="">الكل</option>
+              <option value="open">قيد التنفيذ</option>
+              <option value="done">منجز</option>
+            </select>
+          </div>
+        </div>
+        <form id="taskForm" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+          <select id="t_brand" class="btn-base btn-surface ring-1 ring-white/10"></select>
+          <select id="t_title" class="btn-base btn-surface ring-1 ring-white/10"></select>
+          <input id="t_due" type="date" class="btn-base btn-surface ring-1 ring-white/10">
+          <select id="t_recur" class="btn-base btn-surface ring-1 ring-white/10">
+            <option value="">بدون تكرار</option>
+            <option value="daily">يومي</option>
+            <option value="weekly">أسبوعي</option>
+            <option value="monthly">شهري</option>
+          </select>
+          <button class="sm:col-span-2 lg:col-span-4 btn-base bg-brand-700/60 hover:bg-brand-600/60 text-slate-100 ring-1 ring-white/10">إضافة</button>
+        </form>
+        <div id="taskList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[420px] overflow-auto no-scrollbar"></div>
+      </div>
+    </section>
+
+    <!-- Dropdowns -->
+    <section id="tab-dropdowns" class="tab-section hidden">
+      <div class="glass rounded-2xl p-4">
+        <h2 class="font-bold text-xl mb-4">إدارة القوائم المنسدلة</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-sm font-medium mb-2">اختر القائمة للتعديل</label>
+            <select id="listSelector" class="w-full btn-base btn-surface ring-1 ring-white/10 mb-4">
+              <option value="">-- اختر قائمة --</option>
+              <option value="companies">شركات الشحن</option>
+              <option value="cancellationReasons">أسباب الإلغاء</option>
+              <option value="issues">تصنيفات القضايا</option>
+              <option value="returnStatuses">حالات الإرجاع</option>
+              <option value="brands">العلامات التجارية</option>
+              <option value="partTypes">أنواع القطع</option>
+              <option value="colors">الألوان</option>
+              <option value="taskTitles">عناوين المهام</option>
+              <option value="trackingLinks">روابط التتبع</option>
+            </select>
+            
+            <div class="flex gap-2 mb-4">
+              <input id="newItemInput" class="flex-1 btn-base btn-surface ring-1 ring-white/10" placeholder="أدخل العنصر الجديد...">
+              <button id="addItemBtn" class="btn-base bg-mint-700/60 hover:bg-mint-600/60 text-slate-100 ring-1 ring-white/10">إضافة</button>
+            </div>
+          </div>
+          
+          <div id="currentItemsList" class="space-y-2 max-h-80 overflow-auto no-scrollbar">
+            <div class="text-center text-slate-400 py-8">اختر قائمة من الأعلى لعرض العناصر</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Reports -->
+    <section id="tab-reports" class="tab-section hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="glass rounded-2xl p-4">
+          <h3 class="font-bold mb-4">إحصائيات مفصلة</h3>
+          
+          <!-- Waiting List Stats -->
+          <div class="mb-6">
+            <h4 class="font-semibold text-sm mb-3 text-slate-300">قائمة الانتظار</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">إجمالي العملاء</div>
+                <div id="repWaitingTotal" class="text-lg font-bold">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">متوفر</div>
+                <div id="repWaitingAvailable" class="text-lg font-bold text-mint-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">غير متوفر</div>
+                <div id="repWaitingUnavailable" class="text-lg font-bold text-rose-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">غير محدد</div>
+                <div id="repWaitingUnknown" class="text-lg font-bold text-slate-300">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Stats -->
+          <div class="mb-6">
+            <h4 class="font-semibold text-sm mb-3 text-slate-300">الشحنات</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">إجمالي الفواتير</div>
+                <div id="repShipTotal" class="text-lg font-bold">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">مدفوعة</div>
+                <div id="repShipPaid" class="text-lg font-bold text-mint-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">غير مدفوعة</div>
+                <div id="repShipUnpaid" class="text-lg font-bold text-rose-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">متأخرة</div>
+                <div id="repShipOverdue" class="text-lg font-bold text-amber-300">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Issues Stats -->
+          <div class="mb-6">
+            <h4 class="font-semibold text-sm mb-3 text-slate-300">القضايا</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">إجمالي القضايا</div>
+                <div id="repIssuesTotal" class="text-lg font-bold">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">قيد المعالجة</div>
+                <div id="repIssuesOpen" class="text-lg font-bold text-amber-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">منجزة</div>
+                <div id="repIssuesDone" class="text-lg font-bold text-mint-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">تحتاج متابعة</div>
+                <div id="repIssuesFollowUp" class="text-lg font-bold text-rose-300">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Returns Stats -->
+          <div class="mb-6">
+            <h4 class="font-semibold text-sm mb-3 text-slate-300">الإرجاعات</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">إجمالي الإرجاعات</div>
+                <div id="repReturnsTotal" class="text-lg font-bold">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">جديدة</div>
+                <div id="repReturnsNew" class="text-lg font-bold text-blue-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">قيد المعالجة</div>
+                <div id="repReturnsProcessing" class="text-lg font-bold text-amber-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">مكتملة</div>
+                <div id="repReturnsCompleted" class="text-lg font-bold text-mint-300">0</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tasks Stats -->
+          <div>
+            <h4 class="font-semibold text-sm mb-3 text-slate-300">المهام</h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">إجمالي المهام</div>
+                <div id="repTasksTotal" class="text-lg font-bold">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">قيد التنفيذ</div>
+                <div id="repTasksOpen" class="text-lg font-bold text-amber-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">منجزة</div>
+                <div id="repTasksDone" class="text-lg font-bold text-mint-300">0</div>
+              </div>
+              <div class="glass rounded-lg p-3">
+                <div class="text-xs text-slate-400">متأخرة</div>
+                <div id="repTasksOverdue" class="text-lg font-bold text-rose-300">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-4">
+          <h3 class="font-bold mb-3">الرسوم البيانية</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="glass rounded-xl p-4">
+              <canvas id="chartShipType" height="180"></canvas>
+            </div>
+            <div class="glass rounded-xl p-4">
+              <canvas id="chartIssuesBar" height="180"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Archive -->
+    <section id="tab-archive" class="tab-section hidden">
+      <div class="glass rounded-2xl p-4">
+        <h3 class="font-bold mb-3">الأرشيف</h3>
+        <div id="archiveList" class="space-y-2"></div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Utilities
+    const uid = () => Math.random().toString(36).slice(2) + Date.now().toString(36);
+    const STORAGE_KEY = 'mpdash_v8';
+    const CURRENT_VERSION = 8;
+    const todayStr = () => new Date().toISOString().slice(0,10);
+    const fmtDate = (d) => {
+      if (!d) return '-';
+      try {
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return '-';
+        return date.toLocaleDateString('en-GB', {
+          day: '2-digit',
+          month: '2-digit', 
+          year: 'numeric'
+        });
+      } catch {
+        return '-';
+      }
+    };
+    const isOverdue = (d) => d && d < todayStr();
+
+    // Notifications
+    const Notifications = {
+      show(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.textContent = message;
+        document.body.appendChild(notification);
+        
+        setTimeout(() => notification.classList.add('show'), 100);
+        setTimeout(() => {
+          notification.classList.remove('show');
+          setTimeout(() => document.body.removeChild(notification), 300);
+        }, 3000);
+      }
+    };
+
+    // Modal
+    const Modal = {
+      confirm(message, title = 'تأكيد', type = 'info') {
+        return new Promise((resolve) => {
+          const overlay = document.createElement('div');
+          overlay.className = 'modal-overlay';
+          
+          const modal = document.createElement('div');
+          modal.className = 'modal-content glass-strong rounded-2xl p-6 max-w-md mx-4';
+          modal.innerHTML = `
+            <h3 class="font-bold text-lg mb-4">${title}</h3>
+            <p class="text-slate-300 mb-6">${message}</p>
+            <div class="flex gap-3 justify-end">
+              <button id="cancelBtn" class="btn-base btn-surface ring-1 ring-white/10">إلغاء</button>
+              <button id="confirmBtn" class="btn-base bg-brand-700/60 hover:bg-brand-600/60 text-slate-100 ring-1 ring-white/10">تأكيد</button>
+            </div>
+          `;
+          
+          overlay.appendChild(modal);
+          document.body.appendChild(overlay);
+          
+          modal.querySelector('#confirmBtn').onclick = () => {
+            document.body.removeChild(overlay);
+            resolve(true);
+          };
+          
+          modal.querySelector('#cancelBtn').onclick = () => {
+            document.body.removeChild(overlay);
+            resolve(false);
+          };
+          
+          overlay.onclick = (e) => {
+            if (e.target === overlay) {
+              document.body.removeChild(overlay);
+              resolve(false);
+            }
+          };
+        });
+      },
+
+      alert(message, title = 'تنبيه', type = 'info') {
+        return new Promise((resolve) => {
+          const overlay = document.createElement('div');
+          overlay.className = 'modal-overlay';
+          
+          const modal = document.createElement('div');
+          modal.className = 'modal-content glass-strong rounded-2xl p-6 max-w-md mx-4';
+          modal.innerHTML = `
+            <h3 class="font-bold text-lg mb-4">${title}</h3>
+            <p class="text-slate-300 mb-6">${message}</p>
+            <div class="flex justify-end">
+              <button id="okBtn" class="btn-base bg-brand-700/60 hover:bg-brand-600/60 text-slate-100 ring-1 ring-white/10">موافق</button>
+            </div>
+          `;
+          
+          overlay.appendChild(modal);
+          document.body.appendChild(overlay);
+          
+          modal.querySelector('#okBtn').onclick = () => {
+            document.body.removeChild(overlay);
+            resolve();
+          };
+          
+          overlay.onclick = (e) => {
+            if (e.target === overlay) {
+              document.body.removeChild(overlay);
+              resolve();
+            }
+          };
+        });
+      }
+    };
+
+    // Default data
+    const defaultState = () => ({
+      version: CURRENT_VERSION,
+      dropdowns: {
+        companies: ['سمسا','أرامكس','SPL','RebBox','SAMSA','DHL','أيمكان'],
+        cancellationReasons: ['العميل قام بإلغاء الطلب','اريد تغير عنوان المخزن','تغيير طريقة الدفع','خطأ في البيانات','طلب العميل'],
+        issues: ['تأخير','نقص','تالف'],
+        returnStatuses: ['جديد','قيد المعالجة','مكتمل'],
+        brands: ['Apple','Samsung','Xiaomi','Huawei'],
+        partTypes: ['LCD','Battery','Front Camera','Rear Camera','Motherboards','Charging Port','LCD Flex','Main Flex','Buttons','Out Key','Body','Volume Flex','Power Flex','Volume and Power Flex','SIM Card Tray','Antenna Flex','Vibration Motors','Back Covers','Frames'],
+        colors: ['Black','White','Gold','Blue','Silver','Red','Green','Purple','Pink','Rose Gold','Space Gray','Midnight','Starlight','Product Red'],
+        taskTitles: ['مراجعة الأسعار','تحديث العناوين','مخزون القطع']
+      },
+      trackingLinks: {
+        'RebBox': 'https://redboxsa.com/en/collect/parcel-tracking/?tracking_number=',
+        'SAMSA': 'https://www.smsaexpress.com/sa/trackingdetails?tracknumbers=',
+        'أرامكس': 'https://www.aramex.com/ae/en/track/results?ShipmentNumber=',
+        'DHL': 'https://mydhl.express.dhl/sa/en/tracking.html#/results?id=',
+        'أيمكان': 'https://aymakan.com/ar/tracking/',
+        'سمسا': 'https://www.smsaexpress.com/sa/trackingdetails?tracknumbers='
+      },
+      waiting: [
+        { id: uid(), name: 'محمد', phone: '0555555555', brand: 'Apple', part: 'LCD', model: 'iPhone 12', network: '', color: 'Black', avail: 'unknown', price: '', link: '', preview: '', createdAt: Date.now() }
+      ],
+      shipping: [
+        { id: uid(), number: 'INV-1001', company: 'سمسا', amount: 120, paid: false, due: todayStr(), createdAt: Date.now() }
+      ],
+      issues: [
+        { id: uid(), order: 'ORD-7788', category: 'تأخير', product: 'شاشة S21', follow: todayStr(), status: 'open', createdAt: Date.now() }
+      ],
+      returns: [
+        { id: uid(), number: 'RET-3001', company: 'سمسا', status: 'جديد', product: 'بطارية iPhone X', follow: '', createdAt: Date.now() }
+      ],
+      tasks: [
+        { id: uid(), brand: 'Samsung', title: 'مراجعة الأسعار', due: todayStr(), recur: 'weekly', status: 'open', doneAt: null, createdAt: Date.now() }
+      ],
+      archive: []
+    });
+
+    // Migration
+    function migrate(data) {
+      if (!data || typeof data !== 'object') return defaultState();
+      const d = defaultState();
+      const safe = { ...d, ...data };
+      safe.version = CURRENT_VERSION;
+      
+      // Ensure dropdown arrays exist
+      for (const k of Object.keys(d.dropdowns)) {
+        if (!Array.isArray(safe.dropdowns?.[k])) {
+          if (!safe.dropdowns) safe.dropdowns = {};
+          safe.dropdowns[k] = d.dropdowns[k];
+        }
+      }
+      
+      // Ensure lists exist
+      ['waiting','shipping','issues','returns','tasks','archive'].forEach(k=>{
+        if (!Array.isArray(safe[k])) safe[k] = d[k];
+      });
+      
+      // Ensure tracking links exist
+      if (!safe.trackingLinks || typeof safe.trackingLinks !== 'object') {
+        safe.trackingLinks = d.trackingLinks;
+      }
+      
+      return safe;
+    }
+
+    // Store
+    const Store = {
+      state: null,
+      load() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          this.state = migrate(raw ? JSON.parse(raw) : null);
+        } catch {
+          this.state = defaultState();
+        }
+      },
+      save() {
+        try { 
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); 
+        } catch {}
+      },
+      up(cb) { 
+        cb(this.state); 
+        this.save(); 
+        UI.refreshAll(); 
+      }
+    };
+
+    // Charts
+    const Charts = { shipType: null, issuesBar: null };
+
+    // UI
+    const UI = {
+      els: {},
+      _editTaskId: null,
+
+      init() {
+        this.cache();
+        this.applySavedTheme();
+        this.bindActions();
+        this.bindTabs();
+        this.bindForms();
+        this.populateDropdowns();
+        this.refreshAll();
+        this.initCharts();
+      },
+
+      cache() {
+        this.els = {
+          // Header
+          themeToggle: document.getElementById('themeToggle'),
+          themeLabel: document.getElementById('themeLabel'),
+          backupBtn: document.getElementById('backupBtn'),
+          restoreBtn: document.getElementById('restoreBtn'),
+          clearBtn: document.getElementById('clearBtn'),
+          notifItems: document.getElementById('notifItems'),
+
+          // KPIs
+          kpiWaiting: document.getElementById('kpiWaiting'),
+          kpiOverdueShip: document.getElementById('kpiOverdueShip'),
+          kpiBrandTasks: document.getElementById('kpiBrandTasks'),
+          kpiIssues: document.getElementById('kpiIssues'),
+
+          // Waiting
+          waitList: document.getElementById('waitList'),
+          waitForm: document.getElementById('waitForm'),
+          waitSearch: document.getElementById('waitSearch'),
+          waitAvailFilter: document.getElementById('waitAvailFilter'),
+          w_name: document.getElementById('w_name'),
+          w_phone: document.getElementById('w_phone'),
+          w_brand: document.getElementById('w_brand'),
+          w_part: document.getElementById('w_part'),
+          w_model: document.getElementById('w_model'),
+          w_network: document.getElementById('w_network'),
+          w_color: document.getElementById('w_color'),
+          w_avail: document.getElementById('w_avail'),
+          w_price: document.getElementById('w_price'),
+          w_link: document.getElementById('w_link'),
+          w_preview: document.getElementById('w_preview'),
+          copyPreviewBtn: document.getElementById('copyPreviewBtn'),
+
+          // Shipping
+          shipList: document.getElementById('shipList'),
+          shipForm: document.getElementById('shipForm'),
+          s_number: document.getElementById('s_number'),
+          s_company: document.getElementById('s_company'),
+          s_reason: document.getElementById('s_reason'),
+          s_paid: document.getElementById('s_paid'),
+          s_paid_label: document.getElementById('s_paid_label'),
+          s_due: document.getElementById('s_due'),
+          copyPaidPolicies: document.getElementById('copyPaidPolicies'),
+          shipCompanyFilter: document.getElementById('shipCompanyFilter'),
+          shipPaidFilter: document.getElementById('shipPaidFilter'),
+
+          // Issues
+          issueList: document.getElementById('issueList'),
+          issueForm: document.getElementById('issueForm'),
+          i_order: document.getElementById('i_order'),
+          i_category: document.getElementById('i_category'),
+          i_product: document.getElementById('i_product'),
+          i_follow: document.getElementById('i_follow'),
+          issueStatusFilter: document.getElementById('issueStatusFilter'),
+
+          // Returns
+          retList: document.getElementById('retList'),
+          retForm: document.getElementById('retForm'),
+          r_number: document.getElementById('r_number'),
+          r_company: document.getElementById('r_company'),
+          r_status: document.getElementById('r_status'),
+          r_product: document.getElementById('r_product'),
+          r_follow: document.getElementById('r_follow'),
+
+          // Tasks
+          taskList: document.getElementById('taskList'),
+          taskForm: document.getElementById('taskForm'),
+          t_brand: document.getElementById('t_brand'),
+          t_title: document.getElementById('t_title'),
+          t_due: document.getElementById('t_due'),
+          t_recur: document.getElementById('t_recur'),
+          taskBrandFilter: document.getElementById('taskBrandFilter'),
+          taskStatusFilter: document.getElementById('taskStatusFilter'),
+
+          // Reports
+          repWaitingTotal: document.getElementById('repWaitingTotal'),
+          repWaitingAvailable: document.getElementById('repWaitingAvailable'),
+          repWaitingUnavailable: document.getElementById('repWaitingUnavailable'),
+          repWaitingUnknown: document.getElementById('repWaitingUnknown'),
+          repShipTotal: document.getElementById('repShipTotal'),
+          repShipPaid: document.getElementById('repShipPaid'),
+          repShipUnpaid: document.getElementById('repShipUnpaid'),
+          repShipOverdue: document.getElementById('repShipOverdue'),
+          repIssuesTotal: document.getElementById('repIssuesTotal'),
+          repIssuesOpen: document.getElementById('repIssuesOpen'),
+          repIssuesDone: document.getElementById('repIssuesDone'),
+          repIssuesFollowUp: document.getElementById('repIssuesFollowUp'),
+          repReturnsTotal: document.getElementById('repReturnsTotal'),
+          repReturnsNew: document.getElementById('repReturnsNew'),
+          repReturnsProcessing: document.getElementById('repReturnsProcessing'),
+          repReturnsCompleted: document.getElementById('repReturnsCompleted'),
+          repTasksTotal: document.getElementById('repTasksTotal'),
+          repTasksOpen: document.getElementById('repTasksOpen'),
+          repTasksDone: document.getElementById('repTasksDone'),
+          repTasksOverdue: document.getElementById('repTasksOverdue'),
+
+          // Dropdowns
+          listSelector: document.getElementById('listSelector'),
+          newItemInput: document.getElementById('newItemInput'),
+          addItemBtn: document.getElementById('addItemBtn'),
+          currentItemsList: document.getElementById('currentItemsList'),
+
+          // Archive
+          archiveList: document.getElementById('archiveList')
+        };
+      },
+
+      // Theme
+      applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        document.body.setAttribute('data-theme', theme);
+        this.els.themeLabel.textContent = `الوضع: ${theme === 'dark' ? 'داكن' : 'فاتح'}`;
+        localStorage.setItem('theme_mode', theme);
+        this.updateChartTheme(theme);
+      },
+
+      applySavedTheme() {
+        const saved = localStorage.getItem('theme_mode') || 'dark';
+        this.applyTheme(saved);
+      },
+
+      updateChartTheme(theme) {
+        const textColor = theme === 'dark' ? '#e2e8f0' : '#0f172a';
+        const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+        
+        if (Charts.shipType) {
+          Charts.shipType.options.plugins.legend.labels.color = textColor;
+          Charts.shipType.update();
+        }
+        
+        if (Charts.issuesBar) {
+          Charts.issuesBar.options.scales.x.ticks.color = textColor;
+          Charts.issuesBar.options.scales.y.ticks.color = textColor;
+          Charts.issuesBar.options.scales.x.grid.color = gridColor;
+          Charts.issuesBar.options.scales.y.grid.color = gridColor;
+          Charts.issuesBar.options.plugins.legend.labels.color = textColor;
+          Charts.issuesBar.update();
+        }
+      },
+
+      bindActions() {
+        this.els.themeToggle.addEventListener('click', ()=>{
+          const now = (document.body.getAttribute('data-theme') === 'dark') ? 'light' : 'dark';
+          this.applyTheme(now);
+        });
+
+        // Backup
+        this.els.backupBtn.addEventListener('click', ()=>{
+          try {
+            const data = JSON.stringify(Store.state, null, 2);
+            const blob = new Blob([data], { type:'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); 
+            a.href = url; 
+            a.download = `mpdash-backup-${new Date().toISOString().slice(0,10)}.json`;
+            document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+            Notifications.show('تم إنشاء النسخة الاحتياطية بنجاح', 'success');
+          } catch { 
+            Notifications.show('تعذر إنشاء النسخة الاحتياطية', 'error'); 
+          }
+        });
+
+        // Restore
+        this.els.restoreBtn.addEventListener('click', ()=>{
+          Modal.confirm('هل تريد استعادة البيانات من ملف؟ سيتم استبدال البيانات الحالية.', 'تأكيد الاستعادة', 'warning').then(confirmed => {
+            if (!confirmed) return;
+          
+            const inp = document.createElement('input');
+            inp.type = 'file'; inp.accept = 'application/json';
+            inp.onchange = () => {
+              const f = inp.files?.[0]; if (!f) return;
+              const reader = new FileReader();
+              reader.onload = () => {
+                try {
+                  const obj = JSON.parse(reader.result);
+                  Store.state = migrate(obj);
+                  Store.save();
+                  this.refreshAll();
+                  Notifications.show('تمت استعادة البيانات بنجاح', 'success');
+                } catch { 
+                  Modal.alert('الملف المحدد غير صالح أو تالف. يرجى اختيار ملف نسخة احتياطية صحيح.', 'خطأ في الملف', 'error');
+                }
+              };
+              reader.readAsText(f);
+            };
+            inp.click();
+          });
+        });
+
+        // Clear
+        this.els.clearBtn.addEventListener('click', ()=>{
+          Modal.confirm('هل تريد مسح كل البيانات؟ هذا الإجراء لا يمكن التراجع عنه.', 'تأكيد مسح البيانات', 'warning').then(confirmed => {
+            if (confirmed) {
+              localStorage.removeItem(STORAGE_KEY);
+              Store.load();
+              this.refreshAll();
+              Notifications.show('تمت إعادة ضبط البيانات بنجاح', 'success');
+            }
+          });
+        });
+
+        // Copy preview button
+        this.els.copyPreviewBtn.addEventListener('click', ()=>{
+          const previewText = this.els.w_preview.textContent.trim();
+          if (!previewText || previewText === 'سيتم إنشاء المعاينة تلقائياً...') {
+            Notifications.show('لا يوجد نص للنسخ', 'warning');
+            return;
+          }
+          navigator.clipboard.writeText(previewText).then(() => {
+            Notifications.show('تم نسخ معاينة المنتج بنجاح', 'success');
+          }).catch(() => {
+            Notifications.show('تعذر نسخ النص', 'error');
+          });
+        });
+
+        // Auto-update preview when inputs change
+        const updatePreview = () => {
+          const brand = this.els.w_brand.value || '';
+          const part = this.els.w_part.value || '';
+          const model = this.els.w_model.value.trim() || '';
+          const network = this.els.w_network.value || '';
+          const color = this.els.w_color.value || '';
+          
+          const parts = [brand, model, part, network, color].filter(Boolean);
+          const preview = parts.length > 0 ? parts.join(' ') : 'سيتم إنشاء المعاينة تلقائياً...';
+          
+          this.els.w_preview.innerHTML = parts.length > 0 
+            ? `<span class="preview-text">${preview}</span>`
+            : `<span class="preview-placeholder">${preview}</span>`;
+        };
+
+        // Bind preview update to all relevant inputs
+        [this.els.w_brand, this.els.w_part, this.els.w_model, this.els.w_network, this.els.w_color].forEach(input => {
+          input.addEventListener('input', updatePreview);
+          input.addEventListener('change', updatePreview);
+        });
+
+        // Initial preview update
+        updatePreview();
+
+        // Payment toggle functionality
+        this.els.s_paid.addEventListener('change', () => {
+          this.updatePaymentToggle();
+        });
+
+        // Copy paid policies button
+        this.els.copyPaidPolicies.addEventListener('click', () => {
+          this.copyPaidPoliciesText();
+        });
+
+        // Initialize payment toggle
+        this.updatePaymentToggle();
+      },
+
+      updatePaymentToggle() {
+        const isChecked = this.els.s_paid.checked;
+        this.els.s_paid_label.textContent = isChecked ? 'تم السداد' : 'الدفع عند الاستلام';
+      },
+
+      copyPaidPoliciesText() {
+        const paidPolicies = Store.state.shipping.filter(item => item.paid);
+        
+        if (paidPolicies.length === 0) {
+          Notifications.show('لا توجد بوليصات مدفوعة للنسخ', 'warning');
+          return;
+        }
+
+        let message = 'يرجى الغاء البوليصات التالية\n\n';
+        message += 'شركة الشحن     رقم البوليصة     سبب الالغاء\n\n';
+        
+        paidPolicies.forEach(policy => {
+          message += `${policy.company}          ${policy.number}     ${policy.reason || 'غير محدد'}\n`;
+        });
+
+        navigator.clipboard.writeText(message).then(() => {
+          Notifications.show(`تم نسخ ${paidPolicies.length} بوليصة مدفوعة`, 'success');
+        }).catch(() => {
+          Notifications.show('تعذر نسخ النص', 'error');
+        });
+      },
+
+      bindTabs() {
+        const btns = Array.from(document.querySelectorAll('.tab-btn'));
+        const sections = {
+          dashboard: document.getElementById('tab-dashboard'),
+          dropdowns: document.getElementById('tab-dropdowns'),
+          reports: document.getElementById('tab-reports'),
+          archive: document.getElementById('tab-archive'),
+        };
+        
+        btns.forEach(b=>{
+          b.addEventListener('click', ()=>{
+            // Remove active state from all buttons
+            btns.forEach(x=>{
+              x.classList.remove('bg-brand-800/60','active','text-slate-100');
+              x.classList.add('btn-surface');
+            });
+            
+            // Add active state to clicked button
+            b.classList.remove('btn-surface');
+            b.classList.add('bg-brand-800/60','active','text-slate-100');
+            
+            // Hide all sections
+            Object.values(sections).forEach(s=>s.classList.add('hidden'));
+            
+            // Show selected section
+            const targetSection = sections[b.dataset.tab];
+            if (targetSection) {
+              targetSection.classList.remove('hidden');
+            }
+            
+            // Refresh specific content when needed
+            if (b.dataset.tab === 'reports') {
+              this.refreshReports();
+            }
+            if (b.dataset.tab === 'archive') {
+              this.renderArchive();
+            }
+            if (b.dataset.tab === 'dropdowns') {
+              this.initDropdownManager();
+            }
+          });
+        });
+      },
+
+      bindForms() {
+        // Waiting add
+        this.els.waitForm.addEventListener('submit', (e)=>{
+          e.preventDefault();
+          const phone = this.els.w_phone.value.trim();
+          if (!/^05\d{8}$/.test(phone)) { 
+            Modal.alert('رقم الواتساب يجب أن يكون بالصيغة: 05xxxxxxxx', 'خطأ في رقم الهاتف', 'error'); 
+            return; 
+          }
+          
+          // Get preview text from the display element
+          const previewText = this.els.w_preview.textContent.trim();
+          const finalPreview = (previewText === 'سيتم إنشاء المعاينة تلقائياً...') ? '' : previewText;
+          
+          Store.up(s=>{
+            s.waiting.unshift({
+              id: uid(),
+              name: this.els.w_name.value.trim(),
+              phone,
+              brand: this.els.w_brand.value,
+              part: this.els.w_part.value,
+              model: this.els.w_model.value.trim(),
+              network: this.els.w_network.value.trim(),
+              color: this.els.w_color.value,
+              avail: this.els.w_avail.value || 'unknown',
+              price: this.els.w_price.value,
+              link: this.els.w_link.value,
+              preview: finalPreview,
+              createdAt: Date.now()
+            });
+          });
+          
+          this.els.waitForm.reset();
+          // Reset preview after form reset
+          setTimeout(() => {
+            this.els.w_preview.innerHTML = '<span class="preview-placeholder">سيتم إنشاء المعاينة تلقائياً...</span>';
+          }, 0);
+          Notifications.show('تم إضافة العميل بنجاح', 'success');
+        });
+
+        // Shipping add
+        this.els.shipForm.addEventListener('submit', (e)=>{
+          e.preventDefault();
+          const num = this.els.s_number.value.trim();
+          if (!num) { 
+            Modal.alert('يرجى إدخال رقم البوليصة', 'حقل مطلوب', 'warning'); 
+            return; 
+          }
+          Store.up(s=>{
+            s.shipping.unshift({
+              id: uid(),
+              number: num,
+              company: this.els.s_company.value,
+              reason: this.els.s_reason.value,
+              paid: this.els.s_paid.checked,
+              due: this.els.s_due.value || '',
+              createdAt: Date.now()
+            });
+          });
+          this.els.shipForm.reset();
+          this.updatePaymentToggle();
+          Notifications.show('تم إضافة البوليصة بنجاح', 'success');
+        });
+
+        // Issues add
+        this.els.issueForm.addEventListener('submit', (e)=>{
+          e.preventDefault();
+          const order = this.els.i_order.value.trim();
+          if (!order) { 
+            Modal.alert('يرجى إدخال رقم الطلب', 'حقل مطلوب', 'warning'); 
+            return; 
+          }
+          Store.up(s=>{
+            s.issues.unshift({
+              id: uid(),
+              order,
+              category: this.els.i_category.value,
+              product: this.els.i_product.value.trim(),
+              follow: this.els.i_follow.value || '',
+              status: 'open',
+              createdAt: Date.now()
+            });
+          });
+          this.els.issueForm.reset();
+          Notifications.show('تم إضافة القضية بنجاح', 'success');
+        });
+
+        // Returns add
+        this.els.retForm.addEventListener('submit', (e)=>{
+          e.preventDefault();
+          const number = this.els.r_number.value.trim();
+          if (!number) { 
+            Modal.alert('يرجى إدخال رقم الإرجاع', 'حقل مطلوب', 'warning'); 
+            return; 
+          }
+          Store.up(s=>{
+            s.returns.unshift({
+              id: uid(),
+              number,
+              company: this.els.r_company.value,
+              status: this.els.r_status.value,
+              product: this.els.r_product.value.trim(),
+              follow: this.els.r_follow.value || '',
+              createdAt: Date.now()
+            });
+          });
+          this.els.retForm.reset();
+          Notifications.show('تم إضافة الإرجاع بنجاح', 'success');
+        });
+
+        // Tasks add
+        this.els.taskForm.addEventListener('submit', (e)=>{
+          e.preventDefault();
+          const id = uid();
+          Store.up(s=>{
+            s.tasks.unshift({
+              id,
+              brand: this.els.t_brand.value,
+              title: this.els.t_title.value,
+              due: this.els.t_due.value || todayStr(),
+              recur: this.els.t_recur.value,
+              status: 'open',
+              doneAt: null,
+              createdAt: Date.now()
+            });
+          });
+          this._editTaskId = id;
+          this.els.taskForm.reset();
+          Notifications.show('تم إضافة المهمة بنجاح', 'success');
+        });
+
+        // Filters
+        this.els.waitSearch.addEventListener('input', ()=> this.renderWaiting());
+        this.els.waitAvailFilter.addEventListener('change', ()=> this.renderWaiting());
+        this.els.shipCompanyFilter.addEventListener('change', ()=> this.renderShipping());
+        this.els.shipPaidFilter.addEventListener('change', ()=> this.renderShipping());
+        this.els.issueStatusFilter.addEventListener('change', ()=> this.renderIssues());
+        this.els.taskBrandFilter.addEventListener('change', ()=> this.renderTasks());
+        this.els.taskStatusFilter.addEventListener('change', ()=> this.renderTasks());
+      },
+
+      populateDropdowns() {
+        const d = Store.state.dropdowns;
+        const fill = (sel, arr, withAll=false, withEmpty=false, emptyText='') => {
+          if (!sel) return;
+          const cur = sel.value;
+          sel.innerHTML = '';
+          if (withAll) { 
+            const o=document.createElement('option'); 
+            o.value=''; 
+            o.textContent='الكل'; 
+            sel.appendChild(o); 
+          }
+          if (withEmpty) { 
+            const o=document.createElement('option'); 
+            o.value=''; 
+            o.textContent=emptyText; 
+            sel.appendChild(o); 
+          }
+          arr.forEach(v=>{ 
+            const o=document.createElement('option'); 
+            o.value=v; 
+            o.textContent=v; 
+            sel.appendChild(o); 
+          });
+          if (cur && Array.from(sel.options).some(x=>x.value===cur)) sel.value = cur;
+        };
+
+        fill(this.els.w_brand, d.brands);
+        fill(this.els.w_part, d.partTypes);
+        fill(this.els.w_color, d.colors, false, true, 'بدون لون');
+        fill(this.els.s_company, d.companies);
+        fill(this.els.s_reason, d.cancellationReasons);
+        fill(this.els.shipCompanyFilter, d.companies, true);
+        fill(this.els.i_category, d.issues);
+        fill(this.els.r_company, d.companies);
+        fill(this.els.r_status, d.returnStatuses);
+        fill(this.els.taskBrandFilter, d.brands, true);
+        fill(this.els.t_brand, d.brands);
+        fill(this.els.t_title, d.taskTitles);
+      },
+
+      refreshKPIs() {
+        const s = Store.state;
+        // Only count active items, not archived ones
+        this.els.kpiWaiting.textContent = s.waiting.length;
+        this.els.kpiOverdueShip.textContent = s.shipping.filter(x=>!x.paid && isOverdue(x.due)).length;
+        this.els.kpiBrandTasks.textContent = s.tasks.filter(t=>t.status==='open').length;
+        this.els.kpiIssues.textContent = s.issues.filter(i=>i.status==='open').length;
+      },
+
+      refreshNotifBar() {
+        const s = Store.state;
+        const items = [];
+        const overShip = s.shipping.filter(x=>!x.paid && isOverdue(x.due)).length;
+        if (overShip) items.push(this.tag(`شحنات متأخرة: ${overShip}`, 'amber'));
+        const overTasks = s.tasks.filter(t=>t.status==='open' && isOverdue(t.due)).length;
+        if (overTasks) items.push(this.tag(`مهام متأخرة: ${overTasks}`, 'rose'));
+        const issuesDue = s.issues.filter(i=>i.status==='open' && i.follow && isOverdue(i.follow)).length;
+        if (issuesDue) items.push(this.tag(`متابعة قضايا: ${issuesDue}`, 'brand'));
+        if (!items.length) items.push(`<span class="text-slate-300">لا توجد تنبيهات هامة الآن</span>`);
+        this.els.notifItems.innerHTML = items.join('');
+      },
+
+      tag(text, color) {
+        const map = {
+          brand: 'bg-brand-800/40 text-brand-100',
+          amber: 'bg-amber-800/40 text-amber-100',
+          mint: 'bg-mint-800/40 text-mint-100',
+          rose: 'bg-rose-800/40 text-rose-100'
+        };
+        return `<span class="px-2 py-1 rounded-md text-xs ${map[color] || 'bg-brand-800/40 text-slate-100'}">${text}</span>`;
+      },
+
+      renderWaiting() {
+        const { waiting, dropdowns } = Store.state;
+        const term = (this.els.waitSearch.value||'').toLowerCase();
+        const fav = this.els.waitAvailFilter.value;
+        let arr = waiting.slice();
+        if (term) arr = arr.filter(x => [x.name,x.phone,x.brand,x.part,x.model,x.network,x.color].join(' ').toLowerCase().includes(term));
+        if (fav) arr = arr.filter(x=>x.avail===fav);
+
+        this.els.waitList.innerHTML = '';
+        arr.forEach(item=>{
+          const card = document.createElement('div');
+          card.className = 'glass rounded-xl p-3 flex flex-col gap-2';
+
+          const top = document.createElement('div');
+          top.className = 'flex items-center gap-2';
+          top.innerHTML = `
+            <span class="font-bold">${item.name || '-'}</span>
+            <span class="text-slate-300 text-sm">${item.phone}</span>
+            <span class="ms-auto text-xs ${item.avail==='available'?'text-mint-300':item.avail==='unavailable'?'text-rose-300':'text-slate-300'}">
+              ${item.avail==='available'?'متوفر':item.avail==='unavailable'?'غير متوفر':'غير محدد'}
+            </span>`;
+
+          const comp = document.createElement('div');
+          comp.className = 'text-sm text-slate-200';
+          comp.textContent = `${item.brand||'-'} • ${item.part||'-'} • ${item.model||'-'} • ${item.network||'-'} • ${item.color||'-'}`;
+
+          const actions = document.createElement('div');
+          actions.className = 'flex items-center gap-2 flex-wrap';
+          const price = item.price ? `${Number(item.price).toLocaleString('ar-SA')} ر.س` : '-';
+          actions.innerHTML = `
+            <span class="text-xs text-slate-300">السعر: ${price}</span>
+            ${item.link ? `<a target="_blank" href="${item.link}" class="btn-base btn-surface ring-1 ring-white/10 text-xs">رابط</a>` : ''}
+            ${item.preview ? `<button data-act="copyPreview" class="btn-base btn-surface ring-1 ring-white/10 text-xs">نسخ المعاينة</button>` : ''}
+            <button data-act="toggle" class="btn-base btn-surface ring-1 ring-white/10 text-xs">تبديل التوفر</button>
+            <button data-act="google" class="btn-base btn-surface ring-1 ring-white/10 text-xs">بحث Google</button>
+            <button data-act="msg" class="btn-base btn-surface ring-1 ring-white/10 text-xs">مراسلة المستودع</button>
+            <button data-act="whats" class="btn-base btn-surface ring-1 ring-white/10 text-xs">واتساب</button>
+            <button data-act="edit" class="btn-base btn-surface ring-1 ring-white/10 text-xs">تعديل</button>
+            <button data-act="processed" class="btn-base bg-mint-700/60 hover:bg-mint-600/60 text-slate-100 ring-1 ring-white/10 text-xs">تمت المعالجة</button>
+            <button data-act="archive" class="btn-base btn-surface ring-1 ring-white/10 text-xs">أرشفة</button>
+            <button data-act="delete" class="ms-auto btn-base btn-surface ring-1 ring-white/10 text-xs">حذف</button>`;
+
+          actions.addEventListener('click', (e)=>{
+            const act = e.target?.dataset?.act; 
+            if (!act) return;
+            
+            if (act==='toggle') {
+              Store.up(s=>{
+                const it = s.waiting.find(x=>x.id===item.id);
+                it.avail = it.avail==='available' ? 'unavailable' : it.avail==='unavailable' ? 'unknown' : 'available';
+              });
+            }
+            if (act==='copyPreview') {
+              if (item.preview) {
+                navigator.clipboard.writeText(item.preview).then(() => {
+                  Notifications.show('تم نسخ معاينة المنتج بنجاح', 'success');
+                }).catch(() => {
+                  Notifications.show('تعذر نسخ النص', 'error');
+                });
+              }
+            }
+            if (act==='google') {
+              const base = [item.brand, item.model, item.color, item.part].filter(Boolean).join(' ');
+              const phrase = ' غرناطة المتحدة التجارية لقطع غيار الجوالات';
+              const full = base + phrase;
+              window.open(`https://www.google.com/search?q=${encodeURIComponent(full)}`, '_blank');
+            }
+            if (act==='msg') {
+              const productParts = [item.brand, item.model, item.color, item.part].filter(Boolean);
+              const productDescription = productParts.join(' ');
+              const checkEmoji = String.fromCodePoint(0x2705);
+              
+              const message = `Is ${productDescription} Available? ${checkEmoji}`;
+              
+              // Use warehouse WhatsApp number - you can change this number
+              const warehouseNumber = '966555000000'; // Replace with actual warehouse WhatsApp number
+              window.open(`https://wa.me/${warehouseNumber}?text=${encodeURIComponent(message)}`, '_blank');
+            }
+            if (act==='whats') {
+              const digits = (item.phone||'').replace(/\D/g,'');
+              const to = digits.startsWith('05') && digits.length===10 ? '966'+digits.slice(1) : digits.startsWith('966') ? digits : digits;
+              
+              const productParts = [item.brand, item.model, item.color, item.part].filter(Boolean);
+              const productDescription = productParts.join(' ');
+              const price = item.price ? `${Number(item.price).toLocaleString('ar-SA')} ريال` : 'السعر غير محدد';
+              const link = item.link || 'https://garnatahstore.com';
+              
+              const waveEmoji = String.fromCodePoint(0x1F44B);
+              const checkEmoji = String.fromCodePoint(0x2705);
+              const cartEmoji = String.fromCodePoint(0x1F6D2);
+              const truckEmoji = String.fromCodePoint(0x1F69A);
+              const clockEmoji = String.fromCodePoint(0x23F1);
+              
+              const message = `مرحباً ${waveEmoji}
+عزيزنا العميل، المنتج الذي سألت عنه (${productDescription}) متوفر ${checkEmoji} وسعره ${price}.
+رابط الشراء المباشر ${cartEmoji}: ${link}
+تنويه: السعر لا يشمل الشحن؛ تُحدَّد تكلفة الشحن حسب خيار الشحن المناسب لك في الموقع ${truckEmoji}، ومدة التوصيل من يوم إلى 3 أيام عمل ${clockEmoji}.`;
+              
+              window.open(`https://wa.me/${to}?text=${encodeURIComponent(message)}`, '_blank');
+            }
+            if (act==='processed') {
+              Store.up(s=>{
+                const idx = s.waiting.findIndex(x=>x.id===item.id);
+                if (idx>-1) { 
+                  const [removed] = s.waiting.splice(idx,1); 
+                  s.archive.unshift({ 
+                    id: uid(), 
+                    type:'waiting', 
+                    item: removed, 
+                    archivedAt: Date.now() 
+                  }); 
+                }
+              });
+              Notifications.show('تمت معالجة العميل', 'success');
+            }
+            if (act==='archive') {
+              Store.up(s=>{
+                const idx = s.waiting.findIndex(x=>x.id===item.id);
+                if (idx>-1) { 
+                  const [removed] = s.waiting.splice(idx,1); 
+                  s.archive.unshift({ 
+                    id: uid(), 
+                    type:'waiting', 
+                    item: removed, 
+                    archivedAt: Date.now() 
+                  }); 
+                }
+              });
+              Notifications.show('تم أرشفة العميل', 'success');
+            }
+            if (act==='edit') {
+              // Fill form with current data
+              this.els.w_name.value = item.name || '';
+              this.els.w_phone.value = item.phone || '';
+              this.els.w_brand.value = item.brand || '';
+              this.els.w_part.value = item.part || '';
+              this.els.w_model.value = item.model || '';
+              this.els.w_network.value = item.network || '';
+              this.els.w_color.value = item.color || '';
+              this.els.w_avail.value = item.avail || 'unknown';
+              this.els.w_price.value = item.price || '';
+              this.els.w_link.value = item.link || '';
+              
+              // Update preview
+              const brand = item.brand || '';
+              const part = item.part || '';
+              const model = item.model || '';
+              const network = item.network || '';
+              const color = item.color || '';
+              const parts = [brand, model, part, network, color].filter(Boolean);
+              const preview = parts.length > 0 ? parts.join(' ') : 'سيتم إنشاء المعاينة تلقائياً...';
+              this.els.w_preview.innerHTML = parts.length > 0 
+                ? `<span class="preview-text">${preview}</span>`
+                : `<span class="preview-placeholder">${preview}</span>`;
+              
+              // Delete the item and let user re-add it
+              Store.up(s=>{ s.waiting = s.waiting.filter(x=>x.id!==item.id); });
+              
+              // Scroll to form
+              this.els.waitForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              this.els.w_phone.focus();
+              
+              Notifications.show('تم تحميل البيانات للتعديل', 'info');
+            }
+            if (act==='delete') {
+              Modal.confirm('هل تريد حذف هذا العميل نهائياً؟', 'تأكيد الحذف', 'warning').then(confirmed => {
+                if (confirmed) {
+                  Store.up(s=>{ s.waiting = s.waiting.filter(x=>x.id!==item.id); });
+                  Notifications.show('تم حذف العميل', 'success');
+                }
+              });
+            }
+          });
+
+          card.append(top, comp, actions);
+          this.els.waitList.appendChild(card);
+        });
+      },
+
+      renderShipping() {
+        const { shipping } = Store.state;
+        const fc = this.els.shipCompanyFilter.value;
+        const fp = this.els.shipPaidFilter.value;
+        let arr = shipping.slice();
+        if (fc) arr = arr.filter(x=>x.company===fc);
+        if (fp) arr = arr.filter(x=> fp==='paid' ? x.paid : !x.paid );
+
+        this.els.shipList.innerHTML = '';
+        arr.forEach(item=>{
+          const overdue = !item.paid && isOverdue(item.due);
+          const row = document.createElement('div');
+          row.className = `glass rounded-xl p-3 flex flex-col gap-2 ${overdue?'ring-1 ring-rose-400/50':''}`;
+
+          const head = document.createElement('div');
+          head.className = 'flex items-center gap-2';
+          head.innerHTML = `
+            <span class="font-bold">${item.number}</span>
+            <span class="text-brand-300 text-sm font-bold">${item.company}</span>
+            <span class="ms-auto text-xs ${item.paid?'text-mint-300':'text-rose-300'}">${item.paid?'مدفوع':'غير مدفوع'}</span>`;
+
+          const info = document.createElement('div');
+          info.className = 'text-sm text-slate-200 flex items-center gap-4';
+          info.innerHTML = `
+            <span>سبب الإلغاء: ${item.reason || 'غير محدد'}</span>
+            <span>المتابعة: ${fmtDate(item.due)}</span>`;
+
+          const actions = document.createElement('div');
+          actions.className = 'flex items-center gap-2';
+          actions.innerHTML = `
+            <button data-act="copy" class="btn-base btn-surface ring-1 ring-white/10 text-xs">نسخ</button>
+            <button data-act="togglePaid" class="btn-base btn-surface ring-1 ring-white/10 text-xs">تبديل السداد</button>
+            <button data-act="edit" class="btn-base btn-surface ring-1 ring-white/10 text-xs">تعديل</button>
+            <button data-act="processed" class="btn-base bg-mint-700/60 hover:bg-mint-600/60 text-slate-100 ring-1 ring-white/10 text-xs">تمت المعالجة</button>
+            <button data-act="delete" class="ms-auto btn-base btn-surface ring-1 ring-white/10 text-xs">حذف</button>`;
+
+          actions.addEventListener('click', (e)=>{
+            const act = e.target?.dataset?.act; 
+            if (!act) return;
+            
+            if (act==='copy') {
+              const copyText = `${item.company}       ${item.number}       ${item.reason || 'غير محدد'}`;
+              navigator.clipboard.writeText(copyText).then(() => {
+                Notifications.show('تم نسخ بيانات البوليصة', 'success');
+              }).catch(() => {
+                Notifications.show('تعذر نسخ النص', 'error');
+              });
+            }
+            if (act==='togglePaid') {
+              Store.up(s=>{ 
+                const it = s.shipping.find(x=>x.id===item.id); 
+                it.paid = !it.paid; 
+              });
+            }
+            if (act==='edit') {
+              // Fill form with current data
+              this.els.s_number.value = item.number || '';
+              this.els.s_company.value = item.company || '';
+              this.els.s_reason.value = item.reason || '';
+              this.els.s_due.value = item.due || '';
+              this.els.s_paid.checked = item.paid || false;
+              this.updatePaymentToggle();
+              
+              // Delete the item and let user re-add it
+              Store.up(s=>{ s.shipping = s.shipping.filter(x=>x.id!==item.id); });
+              
+              // Scroll to form
+              this.els.shipForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              this.els.s_number.focus();
+              
+              Notifications.show('تم تحميل البيانات للتعديل', 'info');
+            }
+            if (act==='processed') {
+              Store.up(s=>{
+                const idx = s.shipping.findIndex(x=>x.id===item.id);
+                if (idx>-1) { 
+                  const [removed] = s.shipping.splice(idx,1); 
+                  s.archive.unshift({ 
+                    id: uid(), 
+                    type:'shipping', 
+                    item: removed, 
+                    archivedAt: Date.now() 
+                  }); 
+                }
+              });
+              Notifications.show('تمت معالجة الفاتورة', 'success');
+            }
+            if (act==='delete') { 
+              Modal.confirm('هل تريد حذف هذه الفاتورة نهائياً؟', 'تأكيد الحذف', 'warning').then(confirmed => {
+                if (confirmed) {
+                  Store.up(s=>{ s.shipping = s.shipping.filter(x=>x.id!==item.id); });
+                  Notifications.show('تم حذف الفاتورة', 'success');
+                }
+              });
+            }
+          });
+
+          row.append(head, info, actions);
+          this.els.shipList.appendChild(row);
+        });
+      },
+
+      renderIssues() {
+        const f = this.els.issueStatusFilter.value;
+        let arr = Store.state.issues.slice();
+        if (f) arr = arr.filter(i=>i.status===f);
+        
+        this.els.issueList.innerHTML = '';
+        arr.forEach(item=>{
+          const due = item.follow && isOverdue(item.follow);
+          const row = document.createElement('div');
+          row.className = `glass rounded-xl p-3 flex flex-col gap-2 ${due?'ring-1 ring-brand-400/50':''}`;
+
+          const head = document.createElement('div');
+          head.className = 'flex items-center gap-2';
+          head.innerHTML = `
+            <span class="font-bold">طلب ${item.order}</span>
+            <span class="text-slate-300 text-sm">${item.category}</span>
+            <span class="ms-auto text-xs ${item.status==='open'?'text-amber-300':'text-mint-300'}">${item.status==='open'?'قيد المعالجة':'منجز'}</span>`;
+
+          const body = document.createElement('div');
+          body.className = 'text-sm text-slate-200';
+          body.textContent = `المنتج: ${item.product || '-'}`;
+
+          const actions = document.createElement('div');
+          actions.className = 'flex items-center gap-2';
+          actions.innerHTML = `
+            <span class="text-xs">متابعة: ${fmtDate(item.follow)}</span>
+            <button data-act="toggle" class="btn-base btn-surface ring-1 ring-white/10 text-xs">تبديل الحالة</button>
+            <button data-act="edit" class="btn-base btn-surface ring-1 ring-white/10 text-xs">تعديل</button>
+            <button data-act="processed" class="btn-base bg-mint-700/60 hover:bg-mint-600/60 text-slate-100 ring-1 ring-white/10 text-xs">تمت المعالجة</button>
+            <button data-act="delete" class="ms-auto btn-base btn-surface ring-1 ring-white/10 text-xs">حذف</button>`;
+            
+          actions.addEventListener('click', (e)=>{
+            const act = e.target?.dataset?.act; 
+            if (!act) return;
+            
+            if (act==='toggle') {
+              Store.up(s=>{ 
+                const it = s.issues.find(x=>x.id===item.id); 
+                it.status = it.status==='open'?'done':'open'; 
+              });
+            }
+            if (act==='processed') {
+              Store.up(s=>{
+                const idx = s.issues.findIndex(x=>x.id===item.id);
+                if (idx>-1) { 
+                  const [removed] = s.issues.splice(idx,1); 
+                  s.archive.unshift({ 
+                    id: uid(), 
+                    type:'issue', 
+                    item: removed, 
+                    archivedAt: Date.now() 
+                  }); 
+                }
+              });
+              Notifications.show('تمت معالجة القضية', 'success');
+            }
+            if (act==='edit') {
+              // Fill form with current data
+              this.els.i_order.value = item.order || '';
+              this.els.i_category.value = item.category || '';
+              this.els.i_product.value = item.product || '';
+              this.els.i_follow.value = item.follow || '';
+              
+              // Delete the item and let user re-add it
+              Store.up(s=>{ s.issues = s.issues.filter(x=>x.id!==item.id); });
+              
+              // Scroll to form
+              this.els.issueForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              this.els.i_order.focus();
+              
+              Notifications.show('تم تحميل البيانات للتعديل', 'info');
+            }
+            if (act==='delete') { 
+              Modal.confirm('هل تريد حذف هذه القضية نهائياً؟', 'تأكيد الحذف', 'warning').then(confirmed => {
+                if (confirmed) {
+                  Store.up(s=>{ s.issues = s.issues.filter(x=>x.id!==item.id); });
+                  Notifications.show('تم حذف القضية', 'success');
+                }
+              });
+            }
+          });
+
+          row.append(head, body, actions);
+          this.els.issueList.appendChild(row);
+        });
+      },
+
+      renderReturns() {
+        const arr = Store.state.returns.slice();
+        this.els.retList.innerHTML = '';
+        
+        arr.forEach(item=>{
+          const due = item.follow && isOverdue(item.follow);
+          const row = document.createElement('div');
+          row.className = `glass rounded-xl p-3 flex flex-col gap-2 ${due?'ring-1 ring-mint-400/50':''}`;
+
+          const head = document.createElement('div');
+          head.className = 'flex items-center gap-2';
+          // Get status color
+          const getStatusColor = (status) => {
+            const statusColors = {
+              'جديد': 'text-blue-300',
+              'قيد المعالجة': 'text-amber-300',
+              'مكتمل': 'text-mint-300'
+            };
+            return statusColors[status] || 'text-slate-300';
+          };
+
+          head.innerHTML = `
+            <span class="font-bold">${item.number}</span>
+            ${item.company ? `<span class="text-brand-300 text-sm font-bold">${item.company}</span>` : ''}
+            <span class="ms-auto text-xs ${getStatusColor(item.status)}">${item.status}</span>`;
+
+          const body = document.createElement('div');
+          body.className = 'text-sm text-slate-200';
+          body.textContent = `المنتج: ${item.product || '-'}`;
+
+          const actions = document.createElement('div');
+          actions.className = 'flex items-center gap-2 flex-wrap';
+          actions.innerHTML = `
+            <span class="text-xs">متابعة: ${fmtDate(item.follow)}</span>
+            ${item.company ? `<button data-act="track" class="btn-base bg-blue-700/60 hover:bg-blue-600/60 text-slate-100 ring-1 ring-white/10 text-xs">تتبع</button>` : ''}
+            <button data-act="cycle" class="btn-base btn-surface ring-1 ring-white/10 text-xs">تبديل الحالة</button>
+            <button data-act="edit" class="btn-base btn-surface ring-1 ring-white/10 text-xs">تعديل</button>
+            <button data-act="processed" class="btn-base bg-mint-700/60 hover:bg-mint-600/60 text-slate-100 ring-1 ring-white/10 text-xs">تمت المعالجة</button>
+            <button data-act="delete" class="ms-auto btn-base btn-surface ring-1 ring-white/10 text-xs">حذف</button>`;
+            
+          actions.addEventListener('click', (e)=>{
+            const act = e.target?.dataset?.act; 
+            if (!act) return;
+            
+            if (act==='track') {
+              const trackingLink = Store.state.trackingLinks[item.company];
+              if (trackingLink && item.number) {
+                const fullUrl = trackingLink + encodeURIComponent(item.number);
+                window.open(fullUrl, '_blank', 'noopener,noreferrer');
+              } else {
+                Notifications.show('رابط التتبع غير متوفر لهذه الشركة', 'warning');
+              }
+            }
+            if (act==='cycle') {
+              Store.up(s=>{
+                const list = s.dropdowns.returnStatuses;
+                const it = s.returns.find(x=>x.id===item.id);
+                const i = Math.max(0, list.indexOf(it.status));
+                it.status = list[(i+1)%list.length] || it.status;
+              });
+            }
+            if (act==='processed') {
+              Store.up(s=>{
+                const idx = s.returns.findIndex(x=>x.id===item.id);
+                if (idx>-1) { 
+                  const [removed] = s.returns.splice(idx,1); 
+                  s.archive.unshift({ 
+                    id: uid(), 
+                    type:'return', 
+                    item: removed, 
+                    archivedAt: Date.now() 
+                  }); 
+                }
+              });
+              Notifications.show('تمت معالجة الإرجاع', 'success');
+            }
+            if (act==='edit') {
+              // Fill form with current data
+              this.els.r_number.value = item.number || '';
+              this.els.r_company.value = item.company || '';
+              this.els.r_status.value = item.status || '';
+              this.els.r_product.value = item.product || '';
+              this.els.r_follow.value = item.follow || '';
+              
+              // Delete the item and let user re-add it
+              Store.up(s=>{ s.returns = s.returns.filter(x=>x.id!==item.id); });
+              
+              // Scroll to form
+              this.els.retForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              this.els.r_number.focus();
+              
+              Notifications.show('تم تحميل البيانات للتعديل', 'info');
+            }
+            if (act==='delete') { 
+              Modal.confirm('هل تريد حذف هذا الإرجاع نهائياً؟', 'تأكيد الحذف', 'warning').then(confirmed => {
+                if (confirmed) {
+                  Store.up(s=>{ s.returns = s.returns.filter(x=>x.id!==item.id); });
+                  Notifications.show('تم حذف الإرجاع', 'success');
+                }
+              });
+            }
+          });
+
+          row.append(head, body, actions);
+          this.els.retList.appendChild(row);
+        });
+      },
+
+      renderTasks() {
+        const fBrand = this.els.taskBrandFilter.value;
+        const fStatus = this.els.taskStatusFilter.value;
+        let arr = Store.state.tasks.slice();
+        if (fBrand) arr = arr.filter(t=>t.brand===fBrand);
+        if (fStatus) arr = arr.filter(t=>t.status===fStatus);
+        
+        this.els.taskList.innerHTML = '';
+        arr.forEach(item=>{
+          const overdue = item.status==='open' && isOverdue(item.due);
+          const card = document.createElement('div');
+          card.className = `glass rounded-xl p-3 flex flex-col gap-3 ${overdue?'ring-1 ring-rose-400/50':''}`;
+
+          const viewTop = document.createElement('div');
+          viewTop.className = 'flex items-center gap-2';
+          viewTop.innerHTML = `
+            <span class="font-bold">${item.title}</span>
+            <span class="text-slate-300 text-sm">${item.brand}</span>
+            <span class="ms-auto text-xs">${fmtDate(item.due)}</span>`;
+
+          const viewBottom = document.createElement('div');
+          viewBottom.className = 'flex items-center gap-2 flex-wrap';
+          viewBottom.innerHTML = `
+            <span class="text-xs ${item.recur?'text-amber-200':'text-slate-300'}">${item.recur ? 'متكرر' : 'غير متكرر'}</span>
+            <span class="text-xs ${item.status==='open'?'text-amber-300':'text-mint-300'}">${item.status==='open'?'قيد التنفيذ':'منجز'}</span>
+            <button data-act="toggle" class="ms-auto btn-base btn-surface ring-1 ring-white/10 text-xs">تبديل الحالة</button>
+            <button data-act="edit" class="btn-base btn-surface ring-1 ring-white/10 text-xs">تعديل</button>
+            <button data-act="processed" class="btn-base bg-mint-700/60 hover:bg-mint-600/60 text-slate-100 ring-1 ring-white/10 text-xs">تمت المعالجة</button>
+            <button data-act="delete" class="btn-base btn-surface ring-1 ring-white/10 text-xs">حذف</button>`;
+
+          viewBottom.addEventListener('click', (e)=>{
+            const act = e.target?.dataset?.act; 
+            if (!act) return;
+            
+            if (act==='toggle') {
+              Store.up(s=>{
+                const it = s.tasks.find(x=>x.id===item.id);
+                it.status = it.status==='open' ? 'done' : 'open';
+                it.doneAt = it.status==='done' ? Date.now() : null;
+              });
+            }
+            if (act==='processed') {
+              Store.up(s=>{
+                const idx = s.tasks.findIndex(x=>x.id===item.id);
+                if (idx>-1) { 
+                  const [removed] = s.tasks.splice(idx,1); 
+                  s.archive.unshift({ 
+                    id: uid(), 
+                    type:'task', 
+                    item: removed, 
+                    archivedAt: Date.now() 
+                  }); 
+                }
+              });
+              Notifications.show('تمت معالجة المهمة', 'success');
+            }
+            if (act==='edit') {
+              // Fill form with current data
+              this.els.t_brand.value = item.brand || '';
+              this.els.t_title.value = item.title || '';
+              this.els.t_due.value = item.due || '';
+              this.els.t_recur.value = item.recur || '';
+              
+              // Delete the item and let user re-add it
+              Store.up(s=>{ s.tasks = s.tasks.filter(x=>x.id!==item.id); });
+              
+              // Scroll to form
+              this.els.taskForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              this.els.t_brand.focus();
+              
+              Notifications.show('تم تحميل البيانات للتعديل', 'info');
+            }
+            if (act==='delete') { 
+              Modal.confirm('هل تريد حذف هذه المهمة نهائياً؟', 'تأكيد الحذف', 'warning').then(confirmed => {
+                if (confirmed) {
+                  Store.up(s=>{ s.tasks = s.tasks.filter(x=>x.id!==item.id); });
+                  Notifications.show('تم حذف المهمة', 'success');
+                }
+              });
+            }
+          });
+
+          card.append(viewTop, viewBottom);
+          this.els.taskList.appendChild(card);
+        });
+      },
+
+      renderArchive() {
+        const A = Store.state.archive.slice().sort((a, b) => b.archivedAt - a.archivedAt);
+        this.els.archiveList.innerHTML = '';
+        
+        if (!A.length) { 
+          this.els.archiveList.innerHTML = '<div class="text-center text-slate-300 py-8">لا توجد عناصر مؤرشفة.</div>'; 
+          return; 
+        }
+
+        // Group by date
+        const groupedByDate = {};
+        A.forEach(rec => {
+          const dateKey = new Date(rec.archivedAt).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit', 
+            year: 'numeric'
+          });
+          if (!groupedByDate[dateKey]) groupedByDate[dateKey] = [];
+          groupedByDate[dateKey].push(rec);
+        });
+
+        Object.entries(groupedByDate).forEach(([date, records]) => {
+          // Date header
+          const dateHeader = document.createElement('div');
+          dateHeader.className = 'font-bold text-lg mb-3 mt-6 first:mt-0 text-slate-200';
+          dateHeader.textContent = `تاريخ الأرشفة: ${date}`;
+          this.els.archiveList.appendChild(dateHeader);
+
+          records.forEach(rec => {
+            const row = document.createElement('div');
+            row.className = 'glass rounded-xl p-4 mb-3';
+
+            const getItemDetails = (type, item) => {
+              switch(type) {
+                case 'waiting':
+                  return `العميل: ${item.name || 'غير محدد'} | الهاتف: ${item.phone} | المنتج: ${item.brand} ${item.part} ${item.model}`;
+                case 'shipping':
+                  return `البوليصة: ${item.number} | الشركة: ${item.company} | السبب: ${item.reason || 'غير محدد'}`;
+                case 'issue':
+                  return `الطلب: ${item.order} | التصنيف: ${item.category} | المنتج: ${item.product || 'غير محدد'}`;
+                case 'return':
+                  return `الإرجاع: ${item.number} | الحالة: ${item.status} | المنتج: ${item.product || 'غير محدد'}`;
+                case 'task':
+                  return `المهمة: ${item.title} | العلامة: ${item.brand} | الاستحقاق: ${fmtDate(item.due)}`;
+                default:
+                  return 'تفاصيل غير متوفرة';
+              }
+            };
+
+            const getTypeLabel = (type) => {
+              const labels = {
+                'waiting': 'قائمة الانتظار',
+                'shipping': 'الشحنات',
+                'issue': 'القضايا',
+                'return': 'الإرجاعات',
+                'task': 'المهام'
+              };
+              return labels[type] || type;
+            };
+
+            row.innerHTML = `
+              <div class="flex items-start gap-3">
+                <span class="text-xs px-2 py-1 rounded btn-surface ring-1 ring-white/10 shrink-0">${getTypeLabel(rec.type)}</span>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm text-slate-200 mb-2">${getItemDetails(rec.type, rec.item)}</div>
+                  <div class="text-xs text-slate-400">تم الأرشفة: ${new Date(rec.archivedAt).toLocaleTimeString('en-GB', { hour12: false })}</div>
+                </div>
+                <div class="flex gap-2 shrink-0">
+                  <button data-act="restore" class="btn-base btn-surface ring-1 ring-white/10 text-xs">استرجاع</button>
+                  <button data-act="purge" class="btn-base btn-surface ring-1 ring-white/10 text-xs">حذف</button>
+                </div>
+              </div>
+            `;
+              
+            row.addEventListener('click', (e)=>{
+              const act = e.target?.dataset?.act; 
+              if (!act) return;
+              
+              if (act==='restore') {
+                Store.up(s=>{
+                  const idx = s.archive.findIndex(x=>x.id===rec.id);
+                  if (idx>-1) {
+                    const [r] = s.archive.splice(idx,1);
+                    if (r.type==='waiting') s.waiting.unshift(r.item);
+                    if (r.type==='shipping') s.shipping.unshift(r.item);
+                    if (r.type==='issue') s.issues.unshift(r.item);
+                    if (r.type==='return') s.returns.unshift(r.item);
+                    if (r.type==='task') s.tasks.unshift(r.item);
+                  }
+                });
+                Notifications.show('تم استرجاع العنصر من الأرشيف', 'success');
+              }
+              if (act==='purge') { 
+                Modal.confirm('هل تريد حذف هذا العنصر نهائياً من الأرشيف؟', 'تأكيد الحذف النهائي', 'warning').then(confirmed => {
+                  if (confirmed) {
+                    Store.up(s=>{ s.archive = s.archive.filter(x=>x.id!==rec.id); });
+                    Notifications.show('تم حذف العنصر نهائياً', 'success');
+                  }
+                });
+              }
+            });
+
+            this.els.archiveList.appendChild(row);
+          });
+        });
+      },
+
+      initDropdownManager() {
+        let currentList = '';
+
+        const renderCurrentList = () => {
+          if (!currentList) return;
+          
+          const items = Store.state.dropdowns[currentList] || [];
+          this.els.currentItemsList.innerHTML = '';
+          
+          // Add bulk management buttons
+          const bulkControls = document.createElement('div');
+          bulkControls.className = 'mb-4 flex gap-2 flex-wrap';
+          bulkControls.innerHTML = `
+            <button id="exportCsv" class="btn-base bg-mint-700/60 hover:bg-mint-600/60 text-slate-100 ring-1 ring-white/10 text-xs">تصدير CSV</button>
+            <button id="importCsv" class="btn-base bg-brand-700/60 hover:bg-brand-600/60 text-slate-100 ring-1 ring-white/10 text-xs">استيراد CSV</button>
+            <input type="file" id="csvFileInput" accept=".csv" class="hidden">
+          `;
+          this.els.currentItemsList.appendChild(bulkControls);
+
+          // Export CSV functionality
+          bulkControls.querySelector('#exportCsv').addEventListener('click', () => {
+            if (!currentList || !items.length) {
+              Notifications.show('لا توجد عناصر للتصدير', 'warning');
+              return;
+            }
+            
+            // Add BOM for proper UTF-8 encoding in Excel
+            const BOM = '\uFEFF';
+            const csvContent = BOM + items.join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentList}-${new Date().toLocaleDateString('en-GB').replace(/\//g, '-')}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => {
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }, 100);
+            Notifications.show('تم تصدير القائمة بنجاح', 'success');
+          });
+
+          // Import CSV functionality
+          const fileInput = bulkControls.querySelector('#csvFileInput');
+          bulkControls.querySelector('#importCsv').addEventListener('click', () => {
+            if (!currentList) {
+              Notifications.show('يرجى اختيار قائمة أولاً', 'warning');
+              return;
+            }
+            fileInput.click();
+          });
+
+          fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              try {
+                let csvContent = event.target.result;
+                
+                // Remove BOM if present
+                if (csvContent.charCodeAt(0) === 0xFEFF) {
+                  csvContent = csvContent.slice(1);
+                }
+                
+                // Parse CSV content - handle both comma and newline separated values
+                let newItems = [];
+                
+                // First try splitting by newlines
+                const lines = csvContent.split(/\r?\n/).map(line => line.trim()).filter(line => line.length > 0);
+                
+                if (lines.length > 0) {
+                  // Check if it's comma-separated in a single line or multiple lines
+                  if (lines.length === 1 && lines[0].includes(',')) {
+                    // Single line with comma-separated values
+                    newItems = lines[0].split(',').map(item => item.trim()).filter(item => item.length > 0);
+                  } else {
+                    // Multiple lines, each line is an item
+                    newItems = lines;
+                  }
+                }
+                
+                // Remove duplicates and empty items
+                newItems = [...new Set(newItems.filter(item => item && item.trim().length > 0))];
+                
+                if (newItems.length === 0) {
+                  Notifications.show('الملف فارغ أو لا يحتوي على عناصر صالحة', 'error');
+                  return;
+                }
+
+                Modal.confirm(`هل تريد استبدال القائمة الحالية بـ ${newItems.length} عنصر من الملف؟\n\nالعناصر الجديدة:\n${newItems.slice(0, 5).join(', ')}${newItems.length > 5 ? '...' : ''}`, 'تأكيد الاستيراد', 'warning').then(confirmed => {
+                  if (confirmed) {
+                    Store.up(s => {
+                      s.dropdowns[currentList] = newItems;
+                    });
+                    renderCurrentList();
+                    UI.populateDropdowns();
+                    Notifications.show(`تم استيراد ${newItems.length} عنصر بنجاح`, 'success');
+                  }
+                });
+              } catch (error) {
+                console.error('CSV Import Error:', error);
+                Notifications.show('خطأ في قراءة الملف. تأكد من أن الملف بصيغة CSV صحيحة', 'error');
+              }
+            };
+            reader.readAsText(file, 'UTF-8');
+            fileInput.value = ''; // Reset file input
+          });
+          
+          if (!items.length) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'text-center text-slate-400 py-4';
+            emptyDiv.textContent = 'لا توجد عناصر';
+            this.els.currentItemsList.appendChild(emptyDiv);
+            return;
+          }
+          
+          items.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'glass rounded-lg p-3 flex items-center gap-3 group hover:ring-1 hover:ring-white/20 transition-all';
+            div.innerHTML = `
+              <span class="flex-1 select-text">${item}</span>
+              <button class="btn-base btn-surface ring-1 ring-white/10 text-xs opacity-0 group-hover:opacity-100 transition-opacity" data-action="delete">حذف</button>
+            `;
+            
+            div.addEventListener('click', (e) => {
+              const action = e.target.dataset.action;
+              if (action === 'delete') {
+                Modal.confirm(`هل تريد حذف "${item}"؟`, 'تأكيد الحذف', 'warning').then(confirmed => {
+                  if (confirmed) {
+                    Store.up(s => {
+                      s.dropdowns[currentList] = s.dropdowns[currentList].filter(x => x !== item);
+                    });
+                    renderCurrentList();
+                    this.populateDropdowns();
+                    Notifications.show('تم حذف العنصر', 'success');
+                  }
+                });
+              }
+            });
+            
+            this.els.currentItemsList.appendChild(div);
+          });
+        };
+
+        // List selector change
+        this.els.listSelector.addEventListener('change', (e) => {
+          currentList = e.target.value;
+          renderCurrentList();
+        });
+
+        // Add single item
+        const addSingleItem = () => {
+          const value = this.els.newItemInput.value.trim();
+          if (!value || !currentList) return;
+          
+          Store.up(s => {
+            const arr = s.dropdowns[currentList];
+            const exists = arr.findIndex(x => x.toLowerCase() === value.toLowerCase());
+            if (exists > -1) {
+              Notifications.show('العنصر موجود مسبقاً', 'warning');
+              return;
+            }
+            arr.unshift(value);
+          });
+          
+          this.els.newItemInput.value = '';
+          renderCurrentList();
+          this.populateDropdowns();
+          Notifications.show('تم إضافة العنصر بنجاح', 'success');
+        };
+
+        this.els.addItemBtn.addEventListener('click', addSingleItem);
+        this.els.newItemInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            addSingleItem();
+          }
+        });
+      },
+
+      refreshReports() {
+        const s = Store.state;
+        
+        // Waiting List Stats
+        this.els.repWaitingTotal.textContent = s.waiting.length;
+        this.els.repWaitingAvailable.textContent = s.waiting.filter(x => x.avail === 'available').length;
+        this.els.repWaitingUnavailable.textContent = s.waiting.filter(x => x.avail === 'unavailable').length;
+        this.els.repWaitingUnknown.textContent = s.waiting.filter(x => x.avail === 'unknown').length;
+        
+        // Shipping Stats
+        this.els.repShipTotal.textContent = s.shipping.length;
+        this.els.repShipPaid.textContent = s.shipping.filter(x => x.paid).length;
+        this.els.repShipUnpaid.textContent = s.shipping.filter(x => !x.paid).length;
+        this.els.repShipOverdue.textContent = s.shipping.filter(x => !x.paid && isOverdue(x.due)).length;
+        
+        // Issues Stats
+        this.els.repIssuesTotal.textContent = s.issues.length;
+        this.els.repIssuesOpen.textContent = s.issues.filter(i => i.status === 'open').length;
+        this.els.repIssuesDone.textContent = s.issues.filter(i => i.status === 'done').length;
+        this.els.repIssuesFollowUp.textContent = s.issues.filter(i => i.status === 'open' && i.follow && isOverdue(i.follow)).length;
+        
+        // Returns Stats
+        this.els.repReturnsTotal.textContent = s.returns.length;
+        this.els.repReturnsNew.textContent = s.returns.filter(r => r.status === 'جديد').length;
+        this.els.repReturnsProcessing.textContent = s.returns.filter(r => r.status === 'قيد المعالجة').length;
+        this.els.repReturnsCompleted.textContent = s.returns.filter(r => r.status === 'مكتمل').length;
+        
+        // Tasks Stats
+        this.els.repTasksTotal.textContent = s.tasks.length;
+        this.els.repTasksOpen.textContent = s.tasks.filter(t => t.status === 'open').length;
+        this.els.repTasksDone.textContent = s.tasks.filter(t => t.status === 'done').length;
+        this.els.repTasksOverdue.textContent = s.tasks.filter(t => t.status === 'open' && isOverdue(t.due)).length;
+        
+        // Update charts
+        this.updateCharts();
+      },
+
+      initCharts() {
+        const theme = document.body.getAttribute('data-theme');
+        const textColor = theme === 'dark' ? '#e2e8f0' : '#0f172a';
+        const gridColor = theme === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+        // Shipping companies pie chart
+        const shipCtx = document.getElementById('chartShipType');
+        if (shipCtx) {
+          Charts.shipType = new Chart(shipCtx, {
+            type: 'pie',
+            data: {
+              labels: [],
+              datasets: [{
+                data: [],
+                backgroundColor: ['#3b82f6', '#22c38e', '#ff9900', '#fb3f61']
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: { color: textColor }
+                },
+                title: {
+                  display: true,
+                  text: 'شركات الشحن',
+                  color: textColor
+                }
+              }
+            }
+          });
+        }
+
+        // Issues bar chart
+        const issuesCtx = document.getElementById('chartIssuesBar');
+        if (issuesCtx) {
+          Charts.issuesBar = new Chart(issuesCtx, {
+            type: 'bar',
+            data: {
+              labels: [],
+              datasets: [{
+                label: 'عدد القضايا',
+                data: [],
+                backgroundColor: '#3b82f6'
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                x: {
+                  ticks: { color: textColor },
+                  grid: { color: gridColor }
+                },
+                y: {
+                  ticks: { color: textColor },
+                  grid: { color: gridColor }
+                }
+              },
+              plugins: {
+                legend: {
+                  labels: { color: textColor }
+                },
+                title: {
+                  display: true,
+                  text: 'تصنيفات القضايا',
+                  color: textColor
+                }
+              }
+            }
+          });
+        }
+
+        this.updateCharts();
+      },
+
+      updateCharts() {
+        const s = Store.state;
+
+        // Update shipping chart
+        if (Charts.shipType) {
+          const companyCount = {};
+          s.shipping.forEach(ship => {
+            companyCount[ship.company] = (companyCount[ship.company] || 0) + 1;
+          });
+          
+          Charts.shipType.data.labels = Object.keys(companyCount);
+          Charts.shipType.data.datasets[0].data = Object.values(companyCount);
+          Charts.shipType.update();
+        }
+
+        // Update issues chart
+        if (Charts.issuesBar) {
+          const issueCount = {};
+          s.issues.forEach(issue => {
+            issueCount[issue.category] = (issueCount[issue.category] || 0) + 1;
+          });
+          
+          Charts.issuesBar.data.labels = Object.keys(issueCount);
+          Charts.issuesBar.data.datasets[0].data = Object.values(issueCount);
+          Charts.issuesBar.update();
+        }
+      },
+
+      refreshAll() {
+        this.refreshKPIs();
+        this.refreshNotifBar();
+        this.renderWaiting();
+        this.renderShipping();
+        this.renderIssues();
+        this.renderReturns();
+        this.renderTasks();
+        this.populateDropdowns();
+      }
+    };
+
+    // Initialize
+    Store.load();
+    UI.init();
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'982311db649dbadb',t:'MTc1ODM4OTYyNi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
